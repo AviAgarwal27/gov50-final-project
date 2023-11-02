@@ -42,12 +42,13 @@ dime_res_n <- dime_res_n |>
 
 ```{r}
 dime_res_n |>
-  ggplot(aes(y = nms, x = win)) + geom_point()
+  ggplot(aes(y = nms, x = gen.vote.pct)) + geom_point( alpha = 0.35) + scale_y_continuous(limits = c(0,400))
 ```
 
 
-
-
+```{r}
+dime_res_n
+```
 
 
 
