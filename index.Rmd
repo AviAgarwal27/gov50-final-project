@@ -37,17 +37,12 @@ dime_res_n <- dime_res |>
 
 ```{r}
 dime_res_n <- dime_res_n |>
-   mutate(win = if_else(gwinner == "W",1 ,0))
+   mutate(`Election Outcome` = if_else(gwinner == "W","Won", "Loss"))
 ```
 
 ```{r}
 dime_res_n |>
-  ggplot(aes(y = nms, x = gen.vote.pct)) + geom_point( alpha = 0.35) + scale_y_continuous(limits = c(0,400))
-```
-
-
-```{r}
-dime_res_n
+  ggplot(aes(y = nms, x = gen.vote.pct)) + geom_point(aes(color = `Election Outcome`), alpha = 0.35) + scale_y_continuous(limits = c(0,400)) + labs(y = "% of Contributions Raised Exceeding the Average Contribution Raised relative to seat", x = "% Vote Share in 2016 General Election", caption = " Source: Bonica, Adam. 2023. Database on Ideology, Money in Politics, and Elections. Stanford University Libraries", title = "% Percent of Excess Contributions Raised over % Vote Share in 2016 General Election")
 ```
 
 
