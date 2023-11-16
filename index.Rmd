@@ -32,7 +32,7 @@ dime_res <- dime |>
 dime_res_n <- dime_res |>
   filter(cycle == 2016) |>
   group_by(seat) |>
-  mutate(nms = (100 * (total.receipts/mean(total.receipts)))) |>
+  mutate(nms = (100 * (total.receipts/median(total.receipts)))) |>
   drop_na(nms) |>
   mutate(across(c(`nms`),round,2))
 ```
@@ -47,20 +47,32 @@ nms_gvc <- dime_res_n |>
   ggplot(aes(y = nms, x = gen.vote.pct)) + 
   geom_point(aes(color = `Election Outcome`), alpha = 0.35) + 
   scale_y_continuous(limits = c(0,400)) + 
-  labs(y = "% of Contributions Raised Exceeding the Average \nContribution Raised relative to Sought Seat",
+  labs(y = "% of Contributions Raised Exceeding the\n Median Contribution Raised relative to Sought Seat",
        x = "% Vote Share in 2016 General Election",
-       caption = "Source: Bonica, Adam. 2023. Database on Ideology, Money in Politics, and Elections.\n Stanford, CA: Stanford University Libraries. https://data.stanford.edu/dime",
+       caption = "Source: Bonica, Adam. 2023. Database on Ideology, Money in Politics, and Elections.\n Stanford, CA: Stanford University Libraries. https://data.stanford.edu/dime.",
        title = "% Percent of Excess Contributions Raised over % Vote Share \nin 2016 General Election")
 nms_gvc
 ```
+## Final Project Milestone 4
+
+```{r}
+seat_bar <- dime_res_n |>
+  filter(seat == "federal:senate" | seat == "federal:house") |>
+  filter(nms >= 100) |>
+  group_by(seat) |>
+  mutate(win_bin = if_else(gwinner == "W", 1,0)) |>
+  summarize(prop_win = mean(win_bin)) |>
+  rename(Seat = seat) |>
+  mutate(across(c(`prop_win`),round,2)) |>
+  mutate(Seat = if_else(Seat == "federal:house", "House of Representatives", "Senate"))
+seat_bar
+
+bar <- seat_bar |> 
+  ggplot(aes(x = Seat, y = prop_win, fill = Seat )) + geom_bar(stat='identity', width=.5) + labs(x = "Seat Sought", y = "Proportion of Candidates that Won",caption = "Source: Bonica, Adam. 2023. Database on Ideology, Money in Politics, and Elections.\n Stanford, CA: Stanford University Libraries. https://data.stanford.edu/dime.", title = "Proportion of Candidates that Won that Median Contribution\n Raised relative to Sought Seat") + scale_fill_manual(values = c("darkblue", "darkred")) + geom_hline(yintercept = 0.5) + geom_text(aes(label = prop_win), vjust = 1.5, colour = "white")
+bar
 
 
+```
 
-
-
-
-
-
-
-
-
+This graph shows that candidates for both the Federal House of Representatives and Federal Senate who raised contributions above the median contributions raised relative to their sought seat were more than 50% likely to win their election. 85.5% of House candidates and 63% of Senate Candidates won. This reveals a strong correlation between robust contributions and winning elections. This correlation seems more impactful in elections with smaller voting populations, as more House candidates won than Senate candidates.
+  
