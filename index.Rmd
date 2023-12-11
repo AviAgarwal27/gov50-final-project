@@ -21,6 +21,11 @@ To what extent can exceeding the average donation amount for a particular politi
 ```{r}
 library(tidyverse)
 dime <- read_csv("Gov 50 Final Project/dime_recipients_1979_2020.csv")
+theme_set(theme_bw(base_size = 12))
+library(ggthemes)
+library(extrafont)
+font_import()
+loadfonts(device = "win")
 ```
 `
 ```{r}
@@ -39,18 +44,26 @@ dime_res_n <- dime_res |>
 
 ```{r}
 dime_res_n <- dime_res_n |>
-   mutate(`Election Outcome` = if_else(gwinner == "W","Won", "Loss"))
+   mutate(`Election Outcome:` = if_else(gwinner == "W","Won", "Loss"))
+dime_res_n$`Election Outcome:` <- factor(dime_res_n$`Election Outcome:`, levels = c("Won","Loss"))
 ```
 
-```{r}
+```{r fig.height=5}
 nms_gvc <- dime_res_n |>
   ggplot(aes(y = nms, x = gen.vote.pct)) + 
-  geom_point(aes(color = `Election Outcome`), alpha = 0.35) + 
-  scale_y_continuous(limits = c(0,400)) + 
-  labs(y = "% of Contributions Raised Exceeding the\n Median Contribution Raised relative to Sought Seat",
+  geom_point(aes(color = `Election Outcome:`), alpha = 0.35) + 
+  scale_y_continuous(limits = c(0,400)) + scale_color_manual(values = c("darkblue", "red3")) + 
+  labs(y = "% of Contributions Raised Exceeding the Median\n Contribution Raised relative to Sought Seat",
        x = "% Vote Share in 2016 General Election",
-       caption = "Source: Bonica, Adam. 2023. Database on Ideology, Money in Politics, and Elections.\n Stanford, CA: Stanford University Libraries. https://data.stanford.edu/dime.",
-       title = "% Percent of Excess Contributions Raised over % Vote Share \nin 2016 General Election")
+       caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.",
+       title = "% Percent of Excess Contributions Raised over\n% Vote Share in 2016 General Election") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.75) + 
+  theme_economist() + 
+  theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) + 
+  theme(text=element_text(family="Calibri")) +
+  theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) +
+  theme(axis.title.y = element_text(margin = margin(r = 15))) +
+  theme(legend.title = element_text(size = 14, face = "bold")) 
 nms_gvc
 ```
 ## Final Project Milestone 4
@@ -68,9 +81,24 @@ seat_bar <- dime_res_n |>
 seat_bar
 
 bar <- seat_bar |> 
-  ggplot(aes(x = Seat, y = prop_win, fill = Seat )) + geom_bar(stat='identity', width=.5) + labs(x = "Seat Sought", y = "Proportion of Candidates that Won",caption = "Source: Bonica, Adam. 2023. Database on Ideology, Money in Politics, and Elections.\n Stanford, CA: Stanford University Libraries. https://data.stanford.edu/dime.", title = "Proportion of Candidates that Won that Median Contribution\n Raised relative to Sought Seat") + scale_fill_manual(values = c("darkblue", "darkred")) + geom_hline(yintercept = 0.5) + geom_text(aes(label = prop_win), vjust = 1.5, colour = "white")
+  ggplot(aes(x = Seat, y = prop_win, fill = Seat )) + 
+  geom_bar(stat='identity', width=.5) + 
+  labs(x = "Seat Sought", 
+       y = "Proportion of Candidates that Won",
+       caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.", 
+       title = "Proportion of Candidates that Won that Median\nContribution Raised relative to Sought Seat") + scale_fill_manual(values = c("steelblue", "red3")) + geom_hline(yintercept = 0.5, size = 1) + 
+  geom_text(aes(label = prop_win), vjust = 1.5, colour = "white",family="Calibri" ) +  
+  theme_economist() +
+  theme(legend.position = "none") + 
+  theme(axis.title.y = element_text(margin = margin(r = 15))) + 
+  theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) + 
+  theme(title = element_text(margin = margin(b = 5))) + 
+  theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) +
+  theme(text=element_text(family="Calibri")) 
 bar
+```
 
+```{r}
 
 ```
 
