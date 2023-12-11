@@ -24,8 +24,7 @@ dime <- read_csv("Gov 50 Final Project/dime_recipients_1979_2020.csv")
 theme_set(theme_bw(base_size = 12))
 library(ggthemes)
 library(extrafont)
-font_import()
-loadfonts(device = "win")
+library(broom)
 ```
 `
 ```{r}
@@ -99,7 +98,20 @@ bar
 ```
 
 ```{r}
-
+dime_reg <- dime_res_n |>
+  mutate(win_bin = if_else(gwinner == "W", 1,0)) |>
+  filter(seat == "federal:senate" | seat == "federal:house") |>
+  mutate(Seat = if_else(seat == "federal:house", "House of Representatives", "Senate")) |>
+  mutate(nms_w = if_else(nms >= 100, 1, 0))
+reg <- lm(win_bin ~ nms_w + Seat, data = dime_reg)
+var_labels <- c(
+  "(Intercept)" = "Win Prop. under NMS",
+  "nms_w" = "Win Prop. for House Candidate over NMS",
+  "SeatSenate" = "Senate"
+)
+modelsummary::modelsummary(
+reg ,coef_map = var_labels,
+gof_map = c("nobs", "r.squared", "adj.r.squared"))
 ```
 
 This graph shows that candidates for both the Federal House of Representatives and Federal Senate who raised contributions above the median contributions raised relative to their sought seat were more than 50% likely to win their election. 85.5% of House candidates and 63% of Senate Candidates won. This reveals a strong correlation between robust contributions and winning elections. This correlation seems more impactful in elections with smaller voting populations, as more House candidates won than Senate candidates.
