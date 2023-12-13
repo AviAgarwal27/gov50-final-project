@@ -60,7 +60,7 @@ nms_gvc <- dime_res_n |>
   geom_hline(yintercept = 100, size = 1, color = "black") 
 ```
 
-```{r, include=FALSE}
+```{r, include = FALSE}
 seat_bar <- dime_res_n |>
   filter(seat == "federal:senate" | seat == "federal:house") |>
   filter(nms >= 100) |>
@@ -71,7 +71,7 @@ seat_bar <- dime_res_n |>
   mutate(across(c(`prop_win`),round,2)) |>
   mutate(Seat = if_else(Seat == "federal:house", "House of Representatives", "Senate"))
 
-bar <- seat_bar |> 
+bar <- seat_bar |>
   ggplot(aes(x = Seat, y = prop_win, fill = Seat )) + 
   geom_bar(stat='identity', width=.5) + 
   labs(x = "Seat Sought", 
@@ -87,7 +87,9 @@ bar <- seat_bar |>
   theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) + 
   theme(title = element_text(margin = margin(b = 5))) + 
   theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) +
-  theme(text=element_text(family="Calibri")) 
+  theme(text=element_text(family="Calibri")) +
+  theme(plot.title = element_text(hjust = -7))
+bar
 ```
 
 
@@ -104,7 +106,7 @@ var_labels <- c(
   "SeatSenate" = "Difference in Win Prop. for a Senate Candidate when NMS is atleast 100")
 ```
 
-##Introduction
+## Introduction:
 
 Political campaigns have become increasingly dependent on financial contributions, with campaign funding playing a pivotal role in campaign success. To better understand the role of money in elections, this study examines whether achieving a specific fundraising threshold serves as a reliable indicator of a campaign's likelihood of success. The particular metric of interest is whether a campaign has raised at least the median amount of contributions for its respective seat. By focusing on this criterion, the study aims to determine the impact of meeting or surpassing the median fundraising level on the success of campaigns in the 2016 U.S. House and Senate races.
 
@@ -112,7 +114,16 @@ I hypothesize that the impact of campaign funding will vary between these two le
 
 Understanding the impact of money in elections is key to developing more equitable campaign finance laws, ensuring that financial resources do not determine election outcomes. Free and fair elections are the core tenet of democracy, and regulating the role of money in elections is key to upholding those principles.
 
-##Data
+## Data:
+
+My data source is Stanford’s Database on Ideology, Money in Politics, and Elections (DIME). The database contains over 500 million itemized political contributions to local, state, and federal elections covering from 1979 to 2020. However, since not all necessary information is available for all contributions, I am limiting my dataset to US House and Senate elections for the 2016 general election. 
+
+The independent variable in my study is the percentage of median contributions that a candidate raised for their respective seat, referred to as NMS (Normalized Median Score) for brevity in graphs and analysis. For example, if the median contribution raised for all US House elections was $100,000 and a candidate raised $50,000, their NMS would be 50. This variable was derived by first calculating the median contributions across all seats, then dividing each candidate’s contributions by this median and multiplying by 100. The data for this variable was compiled from publicly mandated campaign information. In my analysis, I established a baseline NMS of 100, indicating that a candidate has raised the median contribution for their seat. This is represented by a black line in the graph.
+
+The dependent variable in my study is the election outcome – a win or loss –, determined by compiling official election results.
+
+The research design for this experiment is cross-sectional. It compares the election outcomes of candidates who achieved an NMS of at least 100 against those with an NMS lower than 100 in the same 2016 general election.
+
 
 ```{r, echo=FALSE, fig.height=5, warning = FALSE}
 nms_gvc
@@ -122,13 +133,15 @@ nms_gvc
 bar
 ```
 
+Regression Table
 ```{r, message=FALSE, echo=FALSE}
+options(width = 10)
 modelsummary::modelsummary(
 reg ,coef_map = var_labels,
 gof_map = c("nobs", "r.squared", "adj.r.squared"))
 ```
 
-##Code
+## Code:
 
 
 ```{r, eval = FALSE}
