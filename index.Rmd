@@ -120,7 +120,7 @@ My data source is Stanford’s Database on Ideology, Money in Politics, and Elec
 
 The independent variable in my study is the percentage of median contributions that a candidate raised for their respective seat, referred to as NMS (Normalized Median Score) for brevity in graphs and analysis. For example, if the median contribution raised for all US House elections was $100,000 and a candidate raised $50,000, their NMS would be 50. This variable was derived by first calculating the median contributions across all seats, then dividing each candidate’s contributions by this median and multiplying by 100. The data for this variable was compiled from publicly mandated campaign information. In my analysis, I established a baseline NMS of 100, indicating that a candidate has raised the median contribution for their seat. This is represented by a black line in the graph. 
 
-The dependent variable in my study is the election outcome – a win or loss –, determined by compiling official election results. As a result, this data only includes candidates who were on the official ballots and ran after the primaries. 
+The dependent variable in my study is the election outcome – a win or loss – determined by compiling official election results. As a result, this data only includes candidates who were on the official ballots and ran after the primaries. 
 
 The research design for this experiment is cross-sectional. It compares the election outcomes of candidates who achieved an NMS of at least 100 against those with an NMS lower than 100 in the same 2016 general election.
 
