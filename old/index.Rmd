@@ -1,0 +1,118 @@
+---
+title: "Gov 50 Final Project"
+author: "Avi Agarwal"
+description: "My final project"
+output:
+  distill::distill_article:
+    self_contained: false
+---
+
+```{r}
+
+```
+
+
+## Final Project Milestone 2
+
+To what extent can exceeding the average donation amount for a particular political office be considered a reliable indicator of success in the election for that office? In this study, I will examine the political offices with the highest general election success rate for candidates who raised 25% more than the average raised by candidates running for the same office. I hypothesize that there will be a trend that indicates money will be most impactful in the most minor elections (with the lowest eligible voters) since people will often have stronger opinions concerning federal elections. As a result, marketing efforts driven by donations will have a lower effect. My sample will be all election contributions for the 2020 general election for 13 political offices (3 federal and 10 state). My unit of analysis is a winning political candidate in the 2020 election. The explanatory variable is the political office the candidate is running for. This is the “seat” variable in the dataset and is coded as unique character strings. The outcome variable is whether a candidate received 25% more contributions than the average received for the political office they are running for. This variable in the dataset is “total.receipts” and is currently coded as the total contributions received, but I can easily create a new binary variable based on if a candidate received 25% more contributions than the average received for the political office they are running for (1 if yes, 0 if no). The observed pattern that would prove my hypothesis is if successful low-level electoral candidates (those running for lower chamber state legislature) correlate most with above-average donations received. Three scenarios disprove my hypothesis. The first would be no correlation between above-average donations received and electoral victory. The second would be winning federal electoral candidates more correlated with above-average donations received than minor state electoral candidates. The last would be no trend based on election size in the correlation between above-average donations received and election success. This data comes from Stanford's “Database on Ideology, Money in Politics, and Elections."
+
+## Final Project Milestone 3
+
+```{r}
+library(tidyverse)
+dime <- read_csv("Gov 50 Final Project/dime_recipients_1979_2020.csv")
+theme_set(theme_bw(base_size = 12))
+library(ggthemes)
+library(extrafont)
+library(broom)
+```
+`
+```{r}
+dime_res <- dime |>
+  drop_na(gwinner)
+```
+
+```{r}
+dime_res_n <- dime_res |>
+  filter(cycle == 2016) |>
+  group_by(seat) |>
+  mutate(nms = (100 * (total.receipts/median(total.receipts)))) |>
+  drop_na(nms) |>
+  mutate(across(c(`nms`),round,2))
+```
+
+```{r}
+dime_res_n <- dime_res_n |>
+   mutate(`Election Outcome:` = if_else(gwinner == "W","Won", "Loss"))
+dime_res_n$`Election Outcome:` <- factor(dime_res_n$`Election Outcome:`, levels = c("Won","Loss"))
+```
+
+```{r fig.height=5}
+nms_gvc <- dime_res_n |>
+  ggplot(aes(y = nms, x = gen.vote.pct)) + 
+  geom_point(aes(color = `Election Outcome:`), alpha = 0.35) + 
+  scale_y_continuous(limits = c(0,400)) + scale_color_manual(values = c("darkblue", "red3")) + 
+  labs(y = "% of Contributions Raised Exceeding the Median\n Contribution Raised relative to Sought Seat",
+       x = "% Vote Share in 2016 General Election",
+       caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.",
+       title = "% Percent of Excess Contributions Raised over\n% Vote Share in 2016 General Election") +
+  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.75) + 
+  theme_economist() + 
+  theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) + 
+  theme(text=element_text(family="Calibri")) +
+  theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) +
+  theme(axis.title.y = element_text(margin = margin(r = 15))) +
+  theme(legend.title = element_text(size = 14, face = "bold")) 
+nms_gvc
+```
+## Final Project Milestone 4
+
+```{r}
+seat_bar <- dime_res_n |>
+  filter(seat == "federal:senate" | seat == "federal:house") |>
+  filter(nms >= 100) |>
+  group_by(seat) |>
+  mutate(win_bin = if_else(gwinner == "W", 1,0)) |>
+  summarize(prop_win = mean(win_bin)) |>
+  rename(Seat = seat) |>
+  mutate(across(c(`prop_win`),round,2)) |>
+  mutate(Seat = if_else(Seat == "federal:house", "House of Representatives", "Senate"))
+seat_bar
+
+bar <- seat_bar |> 
+  ggplot(aes(x = Seat, y = prop_win, fill = Seat )) + 
+  geom_bar(stat='identity', width=.5) + 
+  labs(x = "Seat Sought", 
+       y = "Proportion of Candidates that Won",
+       caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.", 
+       title = "Proportion of Candidates that Won that Median\nContribution Raised relative to Sought Seat") + scale_fill_manual(values = c("steelblue", "red3")) + geom_hline(yintercept = 0.5, size = 1) + 
+  geom_text(aes(label = prop_win), vjust = 1.5, colour = "white",family="Calibri" ) +  
+  theme_economist() +
+  theme(legend.position = "none") + 
+  theme(axis.title.y = element_text(margin = margin(r = 15))) + 
+  theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) + 
+  theme(title = element_text(margin = margin(b = 5))) + 
+  theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) +
+  theme(text=element_text(family="Calibri")) 
+bar
+```
+
+```{r}
+dime_reg <- dime_res_n |>
+  mutate(win_bin = if_else(gwinner == "W", 1,0)) |>
+  filter(seat == "federal:senate" | seat == "federal:house") |>
+  mutate(Seat = if_else(seat == "federal:house", "House of Representatives", "Senate")) |>
+  mutate(nms_w = if_else(nms >= 100, 1, 0))
+reg <- lm(win_bin ~ nms_w + Seat, data = dime_reg)
+var_labels <- c(
+  "(Intercept)" = "Win Prop. under NMS",
+  "nms_w" = "Win Prop. for House Candidate over NMS",
+  "SeatSenate" = "Senate"
+)
+modelsummary::modelsummary(
+reg ,coef_map = var_labels,
+gof_map = c("nobs", "r.squared", "adj.r.squared"))
+```
+
+This graph shows that candidates for both the Federal House of Representatives and Federal Senate who raised contributions above the median contributions raised relative to their sought seat were more than 50% likely to win their election. 85.5% of House candidates and 63% of Senate Candidates won. This reveals a strong correlation between robust contributions and winning elections. This correlation seems more impactful in elections with smaller voting populations, as more House candidates won than Senate candidates.
+  

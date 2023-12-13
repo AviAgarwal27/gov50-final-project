@@ -1,24 +1,18 @@
 ---
-title: "Gov 50 Final Project"
+title: "Final Project"
 author: "Avi Agarwal"
-description: "My final project"
+date: "2023-12-12"
 output:
-  distill::distill_article:
-    self_contained: false
+  html_document: default
+  pdf_document: default
 ---
 
-```{r}
-
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-## Final Project Milestone 2
-
-To what extent can exceeding the average donation amount for a particular political office be considered a reliable indicator of success in the election for that office? In this study, I will examine the political offices with the highest general election success rate for candidates who raised 25% more than the average raised by candidates running for the same office. I hypothesize that there will be a trend that indicates money will be most impactful in the most minor elections (with the lowest eligible voters) since people will often have stronger opinions concerning federal elections. As a result, marketing efforts driven by donations will have a lower effect. My sample will be all election contributions for the 2020 general election for 13 political offices (3 federal and 10 state). My unit of analysis is a winning political candidate in the 2020 election. The explanatory variable is the political office the candidate is running for. This is the “seat” variable in the dataset and is coded as unique character strings. The outcome variable is whether a candidate received 25% more contributions than the average received for the political office they are running for. This variable in the dataset is “total.receipts” and is currently coded as the total contributions received, but I can easily create a new binary variable based on if a candidate received 25% more contributions than the average received for the political office they are running for (1 if yes, 0 if no). The observed pattern that would prove my hypothesis is if successful low-level electoral candidates (those running for lower chamber state legislature) correlate most with above-average donations received. Three scenarios disprove my hypothesis. The first would be no correlation between above-average donations received and electoral victory. The second would be winning federal electoral candidates more correlated with above-average donations received than minor state electoral candidates. The last would be no trend based on election size in the correlation between above-average donations received and election success. This data comes from Stanford's “Database on Ideology, Money in Politics, and Elections."
-
-## Final Project Milestone 3
-
-```{r}
+`
+```{r, include=FALSE}
 library(tidyverse)
 dime <- read_csv("Gov 50 Final Project/dime_recipients_1979_2020.csv")
 theme_set(theme_bw(base_size = 12))
@@ -26,13 +20,13 @@ library(ggthemes)
 library(extrafont)
 library(broom)
 ```
-`
-```{r}
+
+```{r, include=FALSE}
 dime_res <- dime |>
   drop_na(gwinner)
 ```
 
-```{r}
+```{r, include=FALSE}
 dime_res_n <- dime_res |>
   filter(cycle == 2016) |>
   group_by(seat) |>
@@ -41,33 +35,32 @@ dime_res_n <- dime_res |>
   mutate(across(c(`nms`),round,2))
 ```
 
-```{r}
+```{r, include=FALSE}
 dime_res_n <- dime_res_n |>
    mutate(`Election Outcome:` = if_else(gwinner == "W","Won", "Loss"))
 dime_res_n$`Election Outcome:` <- factor(dime_res_n$`Election Outcome:`, levels = c("Won","Loss"))
 ```
 
-```{r fig.height=5}
+```{r , include=FALSE}
 nms_gvc <- dime_res_n |>
   ggplot(aes(y = nms, x = gen.vote.pct)) + 
   geom_point(aes(color = `Election Outcome:`), alpha = 0.35) + 
   scale_y_continuous(limits = c(0,400)) + scale_color_manual(values = c("darkblue", "red3")) + 
-  labs(y = "% of Contributions Raised Exceeding the Median\n Contribution Raised relative to Sought Seat",
+  labs(y = "NMS Score",
        x = "% Vote Share in 2016 General Election",
        caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.",
-       title = "% Percent of Excess Contributions Raised over\n% Vote Share in 2016 General Election") +
-  geom_smooth(method = "lm", se = FALSE, color = "black", size = 0.75) + 
+       title = "NMS Score over Vote Share in 2016 General Election") +
   theme_economist() + 
   theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) + 
   theme(text=element_text(family="Calibri")) +
   theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) +
   theme(axis.title.y = element_text(margin = margin(r = 15))) +
-  theme(legend.title = element_text(size = 14, face = "bold")) 
-nms_gvc
+  theme(legend.title = element_text(size = 14, face = "bold")) +
+  theme(plot.title = element_text(hjust = 0.2)) +
+  geom_hline(yintercept = 100, size = 1, color = "black") 
 ```
-## Final Project Milestone 4
 
-```{r}
+```{r, include = FALSE}
 seat_bar <- dime_res_n |>
   filter(seat == "federal:senate" | seat == "federal:house") |>
   filter(nms >= 100) |>
@@ -77,7 +70,157 @@ seat_bar <- dime_res_n |>
   rename(Seat = seat) |>
   mutate(across(c(`prop_win`),round,2)) |>
   mutate(Seat = if_else(Seat == "federal:house", "House of Representatives", "Senate"))
-seat_bar
+
+bar <- seat_bar |>
+  ggplot(aes(x = Seat, y = prop_win, fill = Seat )) + 
+  geom_bar(stat='identity', width=.5) + 
+  labs(x = "Seat Sought", 
+       y = "Proportion of Candidates that Won",
+       caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.", 
+       title = "Proportion of Candidates that Won with a NMS of at least 100") + 
+  scale_fill_manual(values = c("steelblue", "red3")) + 
+  geom_hline(yintercept = 0.5, size = 1) + 
+  geom_text(aes(label = prop_win), vjust = 1.5, colour = "white",family="Calibri" ) +  
+  theme_economist() +
+  theme(legend.position = "none") + 
+  theme(axis.title.y = element_text(margin = margin(r = 15))) + 
+  theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) + 
+  theme(title = element_text(margin = margin(b = 5))) + 
+  theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) +
+  theme(text=element_text(family="Calibri")) +
+  theme(plot.title = element_text(hjust = -7))
+bar
+```
+
+
+```{r, include=FALSE}
+dime_reg <- dime_res_n |>
+  mutate(win_bin = if_else(gwinner == "W", 1,0)) |>
+  filter(seat == "federal:senate" | seat == "federal:house") |>
+  mutate(Seat = if_else(seat == "federal:house", "House of Representatives", "Senate")) |>
+  mutate(nms_w = if_else(nms >= 100, 1, 0))
+reg <- lm(win_bin ~ nms_w + Seat, data = dime_reg)
+var_labels <- c(
+   "(Intercept)" = "Win Prop. with NMS less than 100",
+  "nms_w" = "Win Prop. for House Candidate when NMS is atleast 100",
+  "SeatSenate" = "Difference in Win Prop. for a Senate Candidate when NMS is atleast 100")
+```
+
+## Introduction:
+
+Political campaigns have become increasingly dependent on financial contributions, with campaign funding playing a pivotal role in campaign success. To better understand the role of money in elections, this study examines whether achieving a specific fundraising threshold serves as a reliable indicator of a campaign's likelihood of success. The particular metric of interest is whether a campaign has raised at least the median amount of contributions for its respective seat. By focusing on this criterion, the study aims to determine the impact of meeting or surpassing the median fundraising level on the success of campaigns in the 2016 U.S. House and Senate races.
+
+I hypothesize that the impact of campaign funding will vary between these two levels of federal elections. For House races, funding will have a greater effect, as it can significantly boost outreach and engagement in these relatively smaller districts. In contrast, in Senate races, which cover entire states and attract more media attention, funding may have a lesser impact of funding on voter decisions, as voters might already have more established opinions influenced by broader national issues.
+
+Understanding the impact of money in elections is key to developing more equitable campaign finance laws, ensuring that financial resources do not determine election outcomes. Free and fair elections are the core tenet of democracy, and regulating the role of money in elections is key to upholding those principles.
+
+## Data:
+
+My data source is Stanford’s Database on Ideology, Money in Politics, and Elections (DIME). The database contains over 500 million itemized political contributions to local, state, and federal elections covering from 1979 to 2020. However, since not all necessary information is available for all contributions, I am limiting my dataset to US House and Senate elections for the 2016 general election. 
+
+The independent variable in my study is the percentage of median contributions that a candidate raised for their respective seat, referred to as NMS (Normalized Median Score) for brevity in graphs and analysis. For example, if the median contribution raised for all US House elections was $100,000 and a candidate raised $50,000, their NMS would be 50. This variable was derived by first calculating the median contributions across all seats, then dividing each candidate’s contributions by this median and multiplying by 100. The data for this variable was compiled from publicly mandated campaign information. In my analysis, I established a baseline NMS of 100, indicating that a candidate has raised the median contribution for their seat. This is represented by a black line in the graph.
+
+The dependent variable in my study is the election outcome – a win or loss –, determined by compiling official election results.
+
+The research design for this experiment is cross-sectional. It compares the election outcomes of candidates who achieved an NMS of at least 100 against those with an NMS lower than 100 in the same 2016 general election.
+
+
+```{r, echo=FALSE, fig.height=5, warning = FALSE}
+nms_gvc
+```
+
+## Results:
+
+```{r, echo=FALSE}
+bar
+```
+
+Regression Table
+```{r, message=FALSE, echo=FALSE}
+options(width = 10)
+modelsummary::modelsummary(
+reg ,coef_map = var_labels,
+gof_map = c("nobs", "r.squared", "adj.r.squared"))
+```
+
+As shown in the graph, 86% of House candidates with an NMS score of at least 100 won their election. According to the regression analysis, an NMS score of 100 or more increases House candidates' likelihood of winning by 54.7%. This finding is statistically significant, as indicated by a p-value of 0.027, below the alpha level of 0.05.
+
+In the Senate races, the scenario is slightly different. The data shows that 63% of Senate candidates with an NMS of at least 100 were successful in their election. The regression coefficient suggests that an NMS of 100 or more for Senate candidates increases the likelihood of a win by 35.4%. This is 22.0 percentage points lower than the increase observed for House candidates. The statistical significance of this difference is supported by a p-value of 0.045, which is also below the alpha level of 0.05.
+
+While the coefficient identified in this study may suggest a causal effect, it is important to clarify that causality cannot be definitively established from these results alone. It is conceivable that candidates who secured higher financial contributions were inherently more popular and, thus, naturally predisposed to win. This potential confounding factor of inherent popularity versus the impact of financial contributions cannot be overlooked. Nevertheless, the amount of campaign contributions a candidate garners can serve as a reliable predictor of election outcomes, particularly in smaller-scale races. 
+
+## Conclusion
+
+My hypothesis that the NMS score can be a predictor of electoral outcome is backed by the data. My theory that smaller districts in House races are more susceptible to the influence of funding is also supported. The data demonstrates that financial contributions play a more significant role in House races, where candidates who achieved a NMS of 100 exhibited a 54.7% increased likelihood of winning, compared to a 35.4% increase in Senate races. However, this study cannot address the claims of causality made in the hypothesis.
+The analysis is limited due to potential confounding factors, such as a candidate's inherent popularity or media influence, which could affect their fundraising capabilities and election outcomes. Additionally, the reliance on a dataset that may not capture all relevant variables, like voter demographics or campaign strategies,  is another limitation. This could lead to skewed interpretations of the relationship between campaign finance and electoral success.
+
+Given more time and resources, I would use a more targeted selection of data, focusing specifically on competitive races where both candidates possess comparable levels of notoriety. This approach would minimize the confounding effects of candidate popularity, allowing for a better assessment of the impact of campaign finance on electoral outcomes.
+
+I would broaden the scope of the dataset to encompass state-level offices across the last four general and midterm elections.  By analyzing a wider range of races over multiple election cycles, the study could uncover more trends and patterns and offer a more robust understanding of the relationship between campaign financing and election results.
+
+
+
+## Code:
+
+
+```{r, eval = FALSE}
+library(tidyverse)
+dime <- read_csv("Gov 50 Final Project/dime_recipients_1979_2020.csv")
+theme_set(theme_bw(base_size = 12))
+library(ggthemes)
+library(extrafont)
+library(broom)
+```
+
+```{r, eval = FALSE}
+dime_res <- dime |>
+  drop_na(gwinner)
+```
+
+```{r, eval = FALSE}
+dime_res_n <- dime_res |>
+  filter(cycle == 2016) |>
+  group_by(seat) |>
+  mutate(nms = (100 * (total.receipts/median(total.receipts)))) |>
+  drop_na(nms) |>
+  mutate(across(c(`nms`),round,2))
+```
+
+```{r, eval = FALSE}
+dime_res_n <- dime_res_n |>
+   mutate(`Election Outcome:` = if_else(gwinner == "W","Won", "Loss"))
+dime_res_n$`Election Outcome:` <- factor(dime_res_n$`Election Outcome:`, levels = c("Won","Loss"))
+```
+
+```{r , eval = FALSE}
+nms_gvc <- dime_res_n |>
+  ggplot(aes(y = nms, x = gen.vote.pct)) + 
+  geom_point(aes(color = `Election Outcome:`), alpha = 0.35) + 
+  scale_y_continuous(limits = c(0,400)) + scale_color_manual(values = c("darkblue", "red3")) + 
+  labs(y = "NMS Score",
+       x = "% Vote Share in 2016 General Election",
+       caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.",
+       title = "NMS Score over Vote Share in 2016 General Election") +
+  theme_economist() + 
+  theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) + 
+  theme(text=element_text(family="Calibri")) +
+  theme(axis.title.x = element_text(margin = margin(t = 10, b = 10))) +
+  theme(axis.title.y = element_text(margin = margin(r = 15))) +
+  theme(legend.title = element_text(size = 14, face = "bold")) +
+  theme(plot.title = element_text(hjust = 0.2)) +
+  geom_hline(yintercept = 100, size = 1, color = "black") 
+```
+
+```{r, eval = FALSE}
+seat_bar <- dime_res_n |>
+  filter(seat == "federal:senate" | seat == "federal:house") |>
+  filter(nms >= 100) |>
+  group_by(seat) |>
+  mutate(win_bin = if_else(gwinner == "W", 1,0)) |>
+  summarize(prop_win = mean(win_bin)) |>
+  rename(Seat = seat) |>
+  mutate(across(c(`prop_win`),round,2)) |>
+  mutate(Seat = if_else(Seat == "federal:house", "House of Representatives", "Senate"))
 
 bar <- seat_bar |> 
   ggplot(aes(x = Seat, y = prop_win, fill = Seat )) + 
@@ -85,7 +228,9 @@ bar <- seat_bar |>
   labs(x = "Seat Sought", 
        y = "Proportion of Candidates that Won",
        caption = "Source: Stanford Database on Ideology, Money in Politics, and Elections.", 
-       title = "Proportion of Candidates that Won that Median\nContribution Raised relative to Sought Seat") + scale_fill_manual(values = c("steelblue", "red3")) + geom_hline(yintercept = 0.5, size = 1) + 
+       title = "Proportion of Candidates that Won with a NMS of at least 100") + 
+  scale_fill_manual(values = c("steelblue", "red3")) + 
+  geom_hline(yintercept = 0.5, size = 1) + 
   geom_text(aes(label = prop_win), vjust = 1.5, colour = "white",family="Calibri" ) +  
   theme_economist() +
   theme(legend.position = "none") + 
@@ -94,10 +239,10 @@ bar <- seat_bar |>
   theme(title = element_text(margin = margin(b = 5))) + 
   theme(plot.caption = element_text(hjust = 0, size = 8, face = "italic")) +
   theme(text=element_text(family="Calibri")) 
-bar
 ```
 
-```{r}
+
+```{r, eval = FALSE}
 dime_reg <- dime_res_n |>
   mutate(win_bin = if_else(gwinner == "W", 1,0)) |>
   filter(seat == "federal:senate" | seat == "federal:house") |>
@@ -105,14 +250,7 @@ dime_reg <- dime_res_n |>
   mutate(nms_w = if_else(nms >= 100, 1, 0))
 reg <- lm(win_bin ~ nms_w + Seat, data = dime_reg)
 var_labels <- c(
-  "(Intercept)" = "Win Prop. under NMS",
-  "nms_w" = "Win Prop. for House Candidate over NMS",
-  "SeatSenate" = "Senate"
-)
-modelsummary::modelsummary(
-reg ,coef_map = var_labels,
-gof_map = c("nobs", "r.squared", "adj.r.squared"))
+  "(Intercept)" = "Win Prop. with NMS less than 100",
+  "nms_w" = "Win Prop. for House Candidate when NMS is atleast 100",
+  "SeatSenate" = "Difference between Win Prop. for a Senate when NMS is atleast 100")
 ```
-
-This graph shows that candidates for both the Federal House of Representatives and Federal Senate who raised contributions above the median contributions raised relative to their sought seat were more than 50% likely to win their election. 85.5% of House candidates and 63% of Senate Candidates won. This reveals a strong correlation between robust contributions and winning elections. This correlation seems more impactful in elections with smaller voting populations, as more House candidates won than Senate candidates.
-  
