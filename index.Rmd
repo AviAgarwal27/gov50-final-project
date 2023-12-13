@@ -118,9 +118,9 @@ Understanding the impact of money in elections is key to developing more equitab
 
 My data source is Stanford’s Database on Ideology, Money in Politics, and Elections (DIME). The database contains over 500 million itemized political contributions to local, state, and federal elections covering from 1979 to 2020. However, since not all necessary information is available for all contributions, I am limiting my data set to US House and Senate elections for the 2016 general election. Additionally, he total campaign contributions for some candidates were not in the data set, so they were dropped from my analysis.
 
-The independent variable in my study is the percentage of median contributions that a candidate raised for their respective seat, referred to as NMS (Normalized Median Score) for brevity in graphs and analysis. For example, if the median contribution raised for all US House elections was $100,000 and a candidate raised $50,000, their NMS would be 50. This variable was derived by first calculating the median contributions across all seats, then dividing each candidate’s contributions by this median and multiplying by 100. The data for this variable was compiled from publicly mandated campaign information. In my analysis, I established a baseline NMS of 100, indicating that a candidate has raised the median contribution for their seat. This is represented by a black line in the graph. 
+The independent variable in my study is the percentage of median contributions that a candidate raised for their respective seat, referred to as NMS (Normalized Median Score) for brevity in graphs and analysis. For example, if the median contribution raised for all US House elections was $100,000 and a candidate raised $50,000, their NMS would be 50. This variable was derived by first calculating the median contributions across all seats, then dividing each candidate’s contributions by this median and multiplying by 100. The data for this variable was measured by using mandated publically-available campaign information that reports total contributions. In my analysis, I established a baseline NMS of 100, indicating that a candidate has raised the median contribution for their seat. This is represented by a black line in the graph. 
 
-The dependent variable in my study is the election outcome – a win or loss – determined by compiling official election results. As a result, this data only includes candidates who were on the official ballots and ran after the primaries. 
+The dependent variable in my study is the election outcome – a win or loss – measured by compiling official election results derived from tabulating voter ballots. As a result, this data only includes candidates who were on the official ballots and ran after the primaries. 
 
 The research design for this experiment is cross-sectional. It compares the election outcomes of candidates who achieved an NMS of at least 100 against those with an NMS lower than 100 in the same 2016 general election.
 
@@ -171,11 +171,6 @@ theme_set(theme_bw(base_size = 12))
 library(ggthemes)
 library(extrafont)
 library(broom)
-```
-
-```{r, eval = FALSE}
-dime_res <- dime |>
-  drop_na(gwinner)
 ```
 
 ```{r, eval = FALSE}
